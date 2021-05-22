@@ -17,27 +17,15 @@ services:
     volumes:
       - axonserver-data:/data
       - axonserver-eventdata:/eventdata
-      - axonserver-config:/config
+      - ./axonserver/config:/config
 
 volumes:
   axonserver-data:
     driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/axonserver/data
-      o: bind
   axonserver-eventdata:
     driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/axonserver/eventdata
-      o: bind
   axonserver-config:
     driver: local
-    driver_opts:
-      type: none
-      device: ${PWD}/axonserver/config
-      o: bind
 
 networks:
   axon-server-network:
