@@ -1,4 +1,4 @@
-package com.gianvittorio.estore.ProductService.event;
+package com.gianvittorio.estore.ProductService.core.event;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.gianvittorio.estore.ProductService.web.model;
+package com.gianvittorio.estore.ProductService.command.rest.model;
 
 import lombok.Builder;
 import lombok.Data;

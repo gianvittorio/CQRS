@@ -1,6 +1,6 @@
 package com.gianvittorio.estore.ProductService.command;
 
-import com.gianvittorio.estore.ProductService.event.ProductCreatedEvent;
+import com.gianvittorio.estore.ProductService.core.event.ProductCreatedEvent;
 import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
