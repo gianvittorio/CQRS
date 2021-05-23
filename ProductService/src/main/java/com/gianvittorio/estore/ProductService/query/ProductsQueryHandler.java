@@ -4,15 +4,16 @@ import com.gianvittorio.estore.ProductService.core.data.ProductEntity;
 import com.gianvittorio.estore.ProductService.core.data.ProductRepository;
 import com.gianvittorio.estore.ProductService.query.rest.model.ProductRestModel;
 import lombok.RequiredArgsConstructor;
+import org.axonframework.config.ProcessingGroup;
 import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Component
+@ProcessingGroup("product-group")
 @RequiredArgsConstructor
 public class ProductsQueryHandler {
 
