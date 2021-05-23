@@ -24,7 +24,7 @@ public class CreateProductCommandInterceptor implements MessageDispatchIntercept
 
             log.info("Intercepted command: " + command.getPayloadType());
 
-            if (CreateProductCommandInterceptor.class.equals(command.getPayloadType())) {
+            if (CreateProductCommand.class.equals(command.getPayloadType())) {
                 CreateProductCommand createProductCommand = (CreateProductCommand) command.getPayload();
 
                 ProductLookupEntity productLookupEntity = productLookupRepository.findByProductIdOrTitle(createProductCommand.getProductId(), createProductCommand.getTitle());
