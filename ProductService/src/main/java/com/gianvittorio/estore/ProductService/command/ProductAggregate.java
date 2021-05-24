@@ -1,6 +1,8 @@
 package com.gianvittorio.estore.ProductService.command;
 
 import com.gianvittorio.estore.ProductService.core.event.ProductCreatedEvent;
+import com.gianvittorio.estore.core.command.ReservedProductCommand;
+import com.gianvittorio.estore.core.event.ProductReservedEvent;
 import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -42,11 +44,32 @@ public class ProductAggregate {
         AggregateLifecycle.apply(productCreatedEvent);
     }
 
+    @CommandHandler
+    public void handle(ReservedProductCommand reservedProductCommand) {
+        if (Integer.compare(quantity, reservedProductCommand.getQuantity()) < 0) {
+            throw new IllegalArgumentException("Insufficient number of items in stock");
+        }
+
+        ProductReservedEvent productReservedEvent = ProductReservedEvent.builder()
+                .orderId(reservedProductCommand.getOrderId())
+                .productId(reservedProductCommand.getProductId())
+                .quantity(reservedProductCommand.getQuantity())
+                .userId(reservedProductCommand.getUserId())
+                .build();
+
+        AggregateLifecycle.apply(productReservedEvent);
+    }
+
     @EventSourcingHandler
     public void on(ProductCreatedEvent productCreatedEvent) {
         this.productId = productCreatedEvent.getProductId();
         this.price = productCreatedEvent.getPrice();
         this.title = productCreatedEvent.getTitle();
         this.quantity = productCreatedEvent.getQuantity();
+    }
+
+    @EventSourcingHandler
+    public void on(ProductReservedEvent event) {
+        this.quantity -= event.getQuantity();
     }
 }
