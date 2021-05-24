@@ -12,13 +12,14 @@ import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Saga
-@RequiredArgsConstructor
 @Slf4j
 public class OrderSaga {
 
-    private transient final CommandGateway commandGateway;
+    @Autowired
+    private transient CommandGateway commandGateway;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")

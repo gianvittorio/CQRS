@@ -45,12 +45,11 @@ public class ProductEventsHandler {
 
     @EventHandler
     public void on(ProductReservedEvent event) {
-        Optional.ofNullable(productRepository.findByProductId(event.getProductId()))
-                .ifPresent(productEntity -> {
-                    productEntity.setQuantity(productEntity.getQuantity() - event.getQuantity());
+        ProductEntity productEntity = productRepository.findByProductId(event.getProductId());
 
-                    productRepository.save(productEntity);
-                });
+        productEntity.setQuantity(productEntity.getQuantity() - event.getQuantity());
+
+        productRepository.save(productEntity);
 
         log.info("ProductReservedEvent is called for productId: {} and orderId: {}", event.getProductId(), event.getOrderId());
     }

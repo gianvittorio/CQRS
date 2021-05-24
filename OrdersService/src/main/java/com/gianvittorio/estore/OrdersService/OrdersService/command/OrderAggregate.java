@@ -15,33 +15,27 @@ public class OrderAggregate {
 
     @AggregateIdentifier
     private String orderId;
-
     private String productId;
-
     private String userId;
-
     private int quantity;
-
     private String addressId;
-
     private OrderStatus orderStatus;
 
     @CommandHandler
     public OrderAggregate(CreateOrderCommand createOrderCommand) {
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
-
         BeanUtils.copyProperties(createOrderCommand, orderCreatedEvent);
 
         AggregateLifecycle.apply(orderCreatedEvent);
     }
 
     @EventSourcingHandler
-    public void on(OrderCreatedEvent event) {
-        this.orderId = event.getOrderId();
-        this.productId = event.getProductId();
-        this.userId = event.getUserId();
-        this.quantity = event.getQuantity();
-        this.addressId = event.getAddressId();
-        this.orderStatus = event.getOrderStatus();
+    public void on(OrderCreatedEvent orderCreatedEvent) throws Exception {
+        this.orderId = orderCreatedEvent.getOrderId();
+        this.productId = orderCreatedEvent.getProductId();
+        this.userId = orderCreatedEvent.getUserId();
+        this.addressId = orderCreatedEvent.getAddressId();
+        this.quantity = orderCreatedEvent.getQuantity();
+        this.orderStatus = orderCreatedEvent.getOrderStatus();
     }
 }
