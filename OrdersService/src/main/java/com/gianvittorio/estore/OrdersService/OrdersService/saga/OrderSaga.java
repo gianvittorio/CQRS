@@ -1,8 +1,10 @@
 package com.gianvittorio.estore.OrdersService.OrdersService.saga;
 
 import com.gianvittorio.estore.OrdersService.OrdersService.event.OrderCreatedEvent;
+import com.gianvittorio.estore.core.command.ProcessPaymentCommand;
 import com.gianvittorio.estore.core.command.ReservedProductCommand;
 import com.gianvittorio.estore.core.data.User;
+import com.gianvittorio.estore.core.event.PaymentProcessedEvent;
 import com.gianvittorio.estore.core.event.ProductReservedEvent;
 import com.gianvittorio.estore.core.query.FetchUserPaymentDetailsQuery;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,9 @@ import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Saga
 @Slf4j
@@ -75,5 +80,28 @@ public class OrderSaga {
         }
 
         log.info("Successfully fetched user payment details for user {}", userPaymentDetails.getFirstName());
+
+        ProcessPaymentCommand processPaymentCommand = ProcessPaymentCommand.builder()
+                .orderId(event.getOrderId())
+                .paymentDetails(userPaymentDetails.getPaymentDetails())
+                .paymentId(UUID.randomUUID().toString())
+                .build();
+
+        String result = null;
+        try {
+            result = commandGateway.sendAndWait(processPaymentCommand, 10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            // Start compensating transaction
+        }
+
+        if (result == null) {
+            log.info("The ProcessPaymentCommand resulted in NULL. Initiating a compensating transaction");
+            // Start compensating transaction
+        }
+    }
+     @SagaEventHandler(associationProperty = "orderId")
+    public void handle(PaymentProcessedEvent paymentProcessedEvent) {
+        // Send an ApproveOrderCommand
     }
 }
