@@ -1,6 +1,6 @@
 package com.gianvittorio.estore.OrdersService.OrdersService.command.rest;
 
-import com.gianvittorio.estore.OrdersService.OrdersService.command.CreateOrderCommand;
+import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.CreateOrderCommand;
 import com.gianvittorio.estore.OrdersService.OrdersService.command.OrderStatus;
 import com.gianvittorio.estore.OrdersService.OrdersService.command.rest.model.OrderCreateRest;
 import lombok.RequiredArgsConstructor;

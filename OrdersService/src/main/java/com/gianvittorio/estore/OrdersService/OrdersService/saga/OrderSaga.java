@@ -1,5 +1,7 @@
 package com.gianvittorio.estore.OrdersService.OrdersService.saga;
 
+import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.ApproveOrderCommand;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderApprovedEvent;
 import com.gianvittorio.estore.OrdersService.OrdersService.event.OrderCreatedEvent;
 import com.gianvittorio.estore.core.command.ProcessPaymentCommand;
 import com.gianvittorio.estore.core.command.ReservedProductCommand;
@@ -14,7 +16,9 @@ import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
+import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
+import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.spring.stereotype.Saga;
@@ -100,8 +104,20 @@ public class OrderSaga {
             // Start compensating transaction
         }
     }
-     @SagaEventHandler(associationProperty = "orderId")
+
+    @SagaEventHandler(associationProperty = "orderId")
     public void handle(PaymentProcessedEvent paymentProcessedEvent) {
         // Send an ApproveOrderCommand
+        ApproveOrderCommand approveOrderCommand = new ApproveOrderCommand(paymentProcessedEvent.getOrderId());
+
+        commandGateway.send(approveOrderCommand);
+    }
+
+    @EndSaga
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(OrderApprovedEvent orderApprovedEvent) {
+        log.info("Order is approved. Order saga is complete for orderId: {}", orderApprovedEvent.getOrderId());
+
+        //SagaLifecycle.end();
     }
 }

@@ -1,4 +1,4 @@
-package com.gianvittorio.estore.OrdersService.OrdersService.command;
+package com.gianvittorio.estore.OrdersService.OrdersService.command.commands;
 
 import com.gianvittorio.estore.OrdersService.OrdersService.command.OrderStatus;
 import lombok.Builder;

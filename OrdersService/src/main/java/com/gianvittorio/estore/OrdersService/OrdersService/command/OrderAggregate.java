@@ -1,5 +1,8 @@
 package com.gianvittorio.estore.OrdersService.OrdersService.command;
 
+import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.ApproveOrderCommand;
+import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.CreateOrderCommand;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderApprovedEvent;
 import com.gianvittorio.estore.OrdersService.OrdersService.event.OrderCreatedEvent;
 import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
@@ -37,5 +40,19 @@ public class OrderAggregate {
         this.addressId = orderCreatedEvent.getAddressId();
         this.quantity = orderCreatedEvent.getQuantity();
         this.orderStatus = orderCreatedEvent.getOrderStatus();
+    }
+
+    @CommandHandler
+    public void handle(ApproveOrderCommand approveOrderCommand) {
+        // Create and publish the OrderApprovedEvent
+
+        OrderApprovedEvent orderApprovedEvent = new OrderApprovedEvent(approveOrderCommand.getOrderId());
+
+        AggregateLifecycle.apply(orderApprovedEvent);
+    }
+
+    @EventSourcingHandler
+    public void on(OrderApprovedEvent orderApprovedEvent) {
+        this.orderStatus = orderApprovedEvent.getOrderStatus();
     }
 }

@@ -2,11 +2,15 @@ package com.gianvittorio.estore.paymentservice.paymentservice.command;
 
 import com.gianvittorio.estore.core.command.ProcessPaymentCommand;
 import com.gianvittorio.estore.core.event.PaymentProcessedEvent;
+import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
+import org.axonframework.spring.stereotype.Aggregate;
 
+@Aggregate
+@NoArgsConstructor
 public class PaymentAggregate {
 
     private String orderId;
