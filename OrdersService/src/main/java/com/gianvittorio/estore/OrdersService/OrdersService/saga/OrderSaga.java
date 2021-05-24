@@ -2,15 +2,19 @@ package com.gianvittorio.estore.OrdersService.OrdersService.saga;
 
 import com.gianvittorio.estore.OrdersService.OrdersService.event.OrderCreatedEvent;
 import com.gianvittorio.estore.core.command.ReservedProductCommand;
+import com.gianvittorio.estore.core.data.User;
 import com.gianvittorio.estore.core.event.ProductReservedEvent;
+import com.gianvittorio.estore.core.query.FetchUserPaymentDetailsQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
+import org.axonframework.queryhandling.QueryGateway;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,6 +24,9 @@ public class OrderSaga {
 
     @Autowired
     private transient CommandGateway commandGateway;
+
+    @Autowired
+    private transient QueryGateway queryGateway;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -50,5 +57,23 @@ public class OrderSaga {
     public void handle(ProductReservedEvent event) {
         // Process user payment
         log.info("ProductReservedEvent is called for productId: {} and orderId: {}", event.getProductId(), event.getOrderId());
+
+        FetchUserPaymentDetailsQuery fetchUserPaymentDetailsQuery = new FetchUserPaymentDetailsQuery(event.getUserId());
+
+        User userPaymentDetails = null;
+        try {
+            userPaymentDetails = queryGateway.query(fetchUserPaymentDetailsQuery, ResponseTypes.instanceOf(User.class)).join();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            // Start compensating transaction
+            return;
+        }
+
+        if (userPaymentDetails == null) {
+            // Start compensating transaction
+            return;
+        }
+
+        log.info("Successfully fetched user payment details for user {}", userPaymentDetails.getFirstName());
     }
 }
