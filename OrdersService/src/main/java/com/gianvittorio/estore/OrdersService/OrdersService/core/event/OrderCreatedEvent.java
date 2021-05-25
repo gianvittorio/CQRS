@@ -1,4 +1,4 @@
-package com.gianvittorio.estore.OrdersService.OrdersService.event;
+package com.gianvittorio.estore.OrdersService.OrdersService.core.event;
 
 import com.gianvittorio.estore.OrdersService.OrdersService.command.OrderStatus;
 import lombok.Data;

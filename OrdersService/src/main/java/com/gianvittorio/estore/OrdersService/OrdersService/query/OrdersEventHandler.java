@@ -1,10 +1,10 @@
 package com.gianvittorio.estore.OrdersService.OrdersService.query;
 
-import com.gianvittorio.estore.OrdersService.OrdersService.command.OrderStatus;
 import com.gianvittorio.estore.OrdersService.OrdersService.core.data.OrderEntity;
 import com.gianvittorio.estore.OrdersService.OrdersService.core.data.OrdersRepository;
 import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderApprovedEvent;
-import com.gianvittorio.estore.OrdersService.OrdersService.event.OrderCreatedEvent;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderCreatedEvent;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderRejectedEvent;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.eventhandling.EventHandler;
 import org.springframework.beans.BeanUtils;
@@ -38,6 +38,15 @@ public class OrdersEventHandler {
                 .ifPresent(orderEntity -> {
                     orderEntity.setOrderStatus(orderApprovedEvent.getOrderStatus());
 
+                    ordersRepository.save(orderEntity);
+                });
+    }
+
+    @EventHandler
+    public void on(OrderRejectedEvent orderRejectedEvent) {
+        Optional.ofNullable(ordersRepository.findByOrderId(orderRejectedEvent.getOrderId()))
+                .ifPresent(orderEntity -> {
+                    orderEntity.setOrderStatus(orderRejectedEvent.getOrderStatus());
                     ordersRepository.save(orderEntity);
                 });
     }

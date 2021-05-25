@@ -1,7 +1,9 @@
 package com.gianvittorio.estore.ProductService.command;
 
 import com.gianvittorio.estore.ProductService.core.event.ProductCreatedEvent;
+import com.gianvittorio.estore.core.command.CancelProductReservationCommand;
 import com.gianvittorio.estore.core.command.ReservedProductCommand;
+import com.gianvittorio.estore.core.event.ProductReservationCanceledEvent;
 import com.gianvittorio.estore.core.event.ProductReservedEvent;
 import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
@@ -60,6 +62,19 @@ public class ProductAggregate {
         AggregateLifecycle.apply(productReservedEvent);
     }
 
+    @CommandHandler
+    public void handle(CancelProductReservationCommand cancelProductReservationCommand) {
+        ProductReservationCanceledEvent productReservationCanceledEvent = ProductReservationCanceledEvent.builder()
+                .orderId(cancelProductReservationCommand.getOrderId())
+                .productId(cancelProductReservationCommand.getProductId())
+                .quantity(cancelProductReservationCommand.getQuantity())
+                .reason(cancelProductReservationCommand.getReason())
+                .userId(cancelProductReservationCommand.getUserId())
+                .build();
+
+        AggregateLifecycle.apply(productReservationCanceledEvent);
+    }
+
     @EventSourcingHandler
     public void on(ProductCreatedEvent productCreatedEvent) {
         this.productId = productCreatedEvent.getProductId();
@@ -71,5 +86,10 @@ public class ProductAggregate {
     @EventSourcingHandler
     public void on(ProductReservedEvent event) {
         this.quantity -= event.getQuantity();
+    }
+
+    @EventSourcingHandler
+    public void on(ProductReservationCanceledEvent productReservationCanceledEvent) {
+        this.quantity += productReservationCanceledEvent.getQuantity();
     }
 }

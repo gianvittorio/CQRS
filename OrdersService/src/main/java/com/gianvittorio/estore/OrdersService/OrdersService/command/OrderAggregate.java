@@ -2,8 +2,11 @@ package com.gianvittorio.estore.OrdersService.OrdersService.command;
 
 import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.ApproveOrderCommand;
 import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.CreateOrderCommand;
+import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.RejectOrderCommand;
 import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderApprovedEvent;
-import com.gianvittorio.estore.OrdersService.OrdersService.event.OrderCreatedEvent;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderCreatedEvent;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderRejectedEvent;
+import com.gianvittorio.estore.core.event.ProductReservationCanceledEvent;
 import lombok.NoArgsConstructor;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -54,5 +57,17 @@ public class OrderAggregate {
     @EventSourcingHandler
     public void on(OrderApprovedEvent orderApprovedEvent) {
         this.orderStatus = orderApprovedEvent.getOrderStatus();
+    }
+
+    @CommandHandler
+    public void on(RejectOrderCommand rejectOrderCommand) {
+        OrderRejectedEvent orderRejectedEvent = new OrderRejectedEvent(rejectOrderCommand.getOrderId(), rejectOrderCommand.getReason());
+
+        AggregateLifecycle.apply(orderRejectedEvent);
+    }
+
+    @EventSourcingHandler
+    public void on(OrderRejectedEvent orderRejectedEvent) {
+        this.orderStatus = orderRejectedEvent.getOrderStatus();
     }
 }
