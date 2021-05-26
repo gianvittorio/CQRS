@@ -5,6 +5,8 @@ import com.gianvittorio.estore.OrdersService.OrdersService.command.commands.Reje
 import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderApprovedEvent;
 import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderCreatedEvent;
 import com.gianvittorio.estore.OrdersService.OrdersService.core.event.OrderRejectedEvent;
+import com.gianvittorio.estore.OrdersService.OrdersService.core.model.OrderSummary;
+import com.gianvittorio.estore.OrdersService.OrdersService.query.FindOrderQuery;
 import com.gianvittorio.estore.core.command.CancelProductReservationCommand;
 import com.gianvittorio.estore.core.command.ProcessPaymentCommand;
 import com.gianvittorio.estore.core.command.ReservedProductCommand;
@@ -25,6 +27,7 @@ import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.queryhandling.QueryGateway;
+import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -48,16 +51,19 @@ public class OrderSaga {
     @Autowired
     private transient DeadlineManager deadlineManager;
 
+    @Autowired
+    private transient QueryUpdateEmitter queryUpdateEmitter;
+
     private String scheduleId;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
-    public void handle(OrderCreatedEvent event) {
+    public void handle(OrderCreatedEvent orderCreatedEvent) {
         ReservedProductCommand reservedProductCommand = ReservedProductCommand.builder()
-                .orderId(event.getOrderId())
-                .productId(event.getProductId())
-                .quantity(event.getQuantity())
-                .userId(event.getUserId())
+                .orderId(orderCreatedEvent.getOrderId())
+                .productId(orderCreatedEvent.getProductId())
+                .quantity(orderCreatedEvent.getQuantity())
+                .userId(orderCreatedEvent.getUserId())
                 .build();
 
         log.info("OrderCreatedEvent handled for orderId: {} and productId: {}", reservedProductCommand.getOrderId(), reservedProductCommand.getProductId());
@@ -69,6 +75,8 @@ public class OrderSaga {
                     public void onResult(CommandMessage<? extends ReservedProductCommand> commandMessage, CommandResultMessage<?> commandResultMessage) {
                         if (commandResultMessage.isExceptional()) {
                             // Start a compensating transaction
+
+                            new RejectOrderCommand(orderCreatedEvent.getOrderId(), commandResultMessage.exceptionResult().getMessage());
                         }
                     }
                 }
@@ -174,6 +182,12 @@ public class OrderSaga {
         log.info("Order is approved. Order saga is complete for orderId: {}", orderApprovedEvent.getOrderId());
 
         //SagaLifecycle.end();
+
+        queryUpdateEmitter.emit(
+                FindOrderQuery.class,
+                query -> true,
+                new OrderSummary(orderApprovedEvent.getOrderId(), orderApprovedEvent.getOrderStatus(), "")
+        );
     }
 
     @SagaEventHandler(associationProperty = "orderId")
@@ -188,6 +202,12 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(OrderRejectedEvent orderRejectedEvent) {
         log.info("Successfully rejected order with id: {}", orderRejectedEvent.getOrderId());
+
+        queryUpdateEmitter.emit(
+                FindOrderQuery.class,
+                query -> true,
+                new OrderSummary(orderRejectedEvent.getOrderId(), orderRejectedEvent.getOrderStatus(), orderRejectedEvent.getReason())
+        );
     }
 
     @DeadlineHandler(deadlineName = PAYMENT_PROCESSING_DEADLINE)
