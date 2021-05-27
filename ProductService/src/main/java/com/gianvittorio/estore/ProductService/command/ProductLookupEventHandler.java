@@ -6,6 +6,7 @@ import com.gianvittorio.estore.ProductService.core.event.ProductCreatedEvent;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.eventhandling.ResetHandler;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,5 +24,10 @@ public class ProductLookupEventHandler {
                 .build();
 
         productLookupRepository.save(productLookupEntity);
+    }
+
+    @ResetHandler
+    public void reset() {
+        productLookupRepository.deleteAll();
     }
 }
